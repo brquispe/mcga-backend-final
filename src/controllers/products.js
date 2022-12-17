@@ -1,9 +1,14 @@
 const conn = require('../models/connection');
 const { Product } = require('../models/product');
+const { Provider } = require('../models/provider');
 
 const getProductList = async (req, res) => {
   try {
-    const products = await Product.find({ isDeleted: false });
+    const products = await Product.find({ isDeleted: false }).populate({
+      path: 'provider',
+      match: { isDeleted: false },
+      select: { name: true },
+    });
     return res.json({
       message: products.length > 0 ? 'Products found' : 'Products not found',
       data: products,
@@ -22,6 +27,7 @@ const createProduct = async (req, res) => {
   const product = {
     name: req.body.name,
     price: req.body.price,
+    ...(req.body.providerId && { provider: { _id: req.body.providerId } }),
   };
   try {
     const session = await conn.startSession();
@@ -29,6 +35,17 @@ const createProduct = async (req, res) => {
     await session.withTransaction(async () => {
       const newProduct = new Product(product);
       const createdProduct = await newProduct.save({ session });
+      if (req.body.providerId) {
+        await Provider.findByIdAndUpdate(
+          req.body.providerId,
+          {
+            $addToSet: {
+              products: createdProduct,
+            },
+          },
+          { session }
+        );
+      }
 
       newProduct = createdProduct;
       return createdProduct;
@@ -80,6 +97,7 @@ const updateProduct = async (req, res) => {
   const newData = {
     name: req.body.name,
     price: req.body.price,
+    ...(req.body.providerId && { provider: { _id: req.body.providerId } }),
   };
   try {
     const session = await conn.startSession();
@@ -97,6 +115,17 @@ const updateProduct = async (req, res) => {
           data: undefined,
           error: true,
         });
+      }
+
+      if (newData.providerId) {
+        const resp = await Provider.findByIdAndUpdate(
+          newData.providerId,
+          {
+            $addToSet: { products: product },
+          },
+          { session }
+        );
+        product.provider = resp;
       }
     });
 
