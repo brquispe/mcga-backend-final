@@ -13,6 +13,10 @@ const ProductSchema = new Schema({
     required: true,
     min: 0
   },
+  provider: {
+    type: Schema.Types.ObjectId,
+    ref: 'Providers'
+  },
   isDeleted: {
     type: Boolean,
     required: true,
