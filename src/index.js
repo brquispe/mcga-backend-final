@@ -1,6 +1,7 @@
 const { PORT } = require('./config/environment');
 const express = require('express');
 const productsRouter = require('./routes/products');
+const authRouter = require('./routes/auth');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/auth', authRouter);
 app.use(productsRouter);
 
 require('./models/connection');
