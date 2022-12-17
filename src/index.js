@@ -2,6 +2,7 @@ const { PORT } = require('./config/environment');
 const express = require('express');
 const productsRouter = require('./routes/products');
 const authRouter = require('./routes/auth');
+const providersRouter = require('./routes/providers');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use((req, res, next) => {
 
 app.use('/auth', authRouter);
 app.use(productsRouter);
+app.use(providersRouter);
 
 require('./models/connection');
 app.listen(PORT, () => console.log(`Listening at http://localhost:${PORT}`));
