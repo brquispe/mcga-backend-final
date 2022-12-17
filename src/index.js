@@ -1,5 +1,6 @@
 const { PORT } = require('./config/environment');
 const express = require('express');
+const productsRouter = require('./routes/products');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(productsRouter);
 
 require('./models/connection');
 app.listen(PORT, () => console.log(`Listening at http://localhost:${PORT}`));
